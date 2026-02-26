@@ -1,0 +1,306 @@
+<template>
+    <!-- Error Message -->
+    <lightning-alert
+        if:true={errorMessage}
+        type="error"
+        title="Error"
+        message={errorMessage}
+        closable
+        onclose={handleErrorClose}
+    ></lightning-alert>
+
+    <!-- Saving Spinner -->
+    <div if:true={isSaving} class="slds-is-relative spinner-container">
+        <lightning-spinner
+            alternative-text="Saving Payment"
+            size="large"
+        ></lightning-spinner>
+    </div>
+
+    <!-- Main Content -->
+    <div if:false={isSaving} class="payment-container" lwc:ref="scrollContainer">
+        <!-- View Payment History Button (Top Right) -->
+        <div class="history-button-container">
+            <lightning-button
+                label="📋 View Payment History"
+                onclick={openPaymentHistory}
+                variant="neutral"
+                class="history-button"
+            ></lightning-button>
+        </div>
+
+        <!-- SECTION 1: Invoice Summary Card -->
+        <lightning-card
+            if:true={hasInvoiceData}
+            title="Order Summary"
+            icon-name="standard-invoice"
+            class="summary-card slds-m-bottom_large"
+        >
+            <div class="summary-grid">
+                <!-- Invoice Amount -->
+                <div class="summary-item">
+                    <div class="summary-label">Order Amount</div>
+                    <lightning-formatted-number
+                        value={invoiceAmount}
+                        format-style="currency"
+                        currency-code={currencyCode}
+                        minimum-fraction-digits="2"
+                        maximum-fraction-digits="2"
+                        class="summary-amount"
+                    ></lightning-formatted-number>
+                </div>
+
+                <!-- Total Paid Amount -->
+                <div class="summary-item">
+                    <div class="summary-label">Amount Paid</div>
+                    <lightning-formatted-number
+                        value={totalPaidAmount}
+                        format-style="currency"
+                        currency-code={currencyCode}
+                        minimum-fraction-digits="2"
+                        maximum-fraction-digits="2"
+                        class="summary-amount"
+                    ></lightning-formatted-number>
+                </div>
+
+                <!-- Outstanding Amount -->
+                <div class="summary-item outstanding-item">
+                    <div class="summary-label">Outstanding Amount</div>
+                    <lightning-formatted-number
+                        value={outstandingAmount}
+                        format-style="currency"
+                        currency-code={currencyCode}
+                        minimum-fraction-digits="2"
+                        maximum-fraction-digits="2"
+                        class="summary-amount outstanding-amount"
+                    ></lightning-formatted-number>
+                </div>
+            </div>
+        </lightning-card>
+
+        <!-- COMPLETION MESSAGE (When outstanding is zero) -->
+        <div if:true={isPaymentComplete} class="completion-message-container">
+            <div class="completion-message">
+                <span class="completion-icon">✅</span>
+                <h3 class="completion-title">Payment Successfully Completed</h3>
+                <p class="completion-text">The payment for this invoice has been processed successfully.</p>
+                <p class="completion-subtext">All outstanding balances have been settled.</p>
+                <lightning-button
+                    label="View Payment History"
+                    onclick={openPaymentHistory}
+                    variant="success"
+                    class="history-link-button"
+                ></lightning-button>
+            </div>
+        </div>
+
+        <!-- SECTION 2: Payment Method Selection -->
+        <lightning-card
+            if:true={showPaymentMethods}
+            title="Select Payment Method"
+            icon-name="standard-payment"
+            class="payment-method-card slds-m-bottom_large"
+        >
+            <div class="payment-methods-container">
+                <template for:each={paymentModes} for:item="mode">
+                    <button
+                        key={mode.value}
+                        class="{getPaymentModeButtonClass(mode.value)}"
+                        data-mode={mode.value}
+                        onclick={handlePaymentModeSelect}
+                        title="Select {mode.label} payment method"
+                    >
+                        <span class="payment-icon">{getPaymentIcon(mode.value)}</span>
+                        <span class="payment-label">{mode.label}</span>
+                    </button>
+                </template>
+            </div>
+        </lightning-card>
+
+        <!-- SECTION 3: Payment Form -->
+        <div if:true={showPaymentForm} class="payment-details-wrapper" lwc:ref="paymentDetailsCard">
+            <div class="payment-details-card">
+                <!-- Card Header -->
+                <div class="payment-card-header">
+                    <h2 class="card-title">💳 Payment Details</h2>
+                </div>
+
+                <!-- Form Fields -->
+                <div class="payment-form-container">
+                    <!-- Amount Input -->
+                    <div class="form-field">
+                        <lightning-input
+                            type="number"
+                            label="Amount"
+                            placeholder="0.00"
+                            value={paymentAmount}
+                            onchange={handleAmountChange}
+                            min="0"
+                            step="0.01"
+                            required
+                            class="form-input"
+                        ></lightning-input>
+                    </div>
+
+                    <!-- Dynamic Fields Based on Payment Mode -->
+                    <template for:each={currentModeFields} for:item="field">
+                        <div key={field.name} class="form-field">
+                            <!-- Card Type Combobox -->
+                            <template if:true="{isCardTypeField(field.name)}">
+                                <lightning-combobox
+                                    label={field.label}
+                                    value="{getFieldValue(field.name)}"
+                                    options={cardTypeOptions}
+                                    onchange={handleCardTypeChange}
+                                    required={field.required}
+                                    placeholder="Select option"
+                                    class="form-input"
+                                ></lightning-combobox>
+                            </template>
+
+                            <!-- Text Input Fields -->
+                            <template if:false="{isCardTypeField(field.name)}">
+                                <template if:true={field.required}>
+                                    <lightning-input
+                                        type="text"
+                                        label={field.label}
+                                        placeholder="Enter card holder name"
+                                        value="{getFieldValue(field.name)}"
+                                        onchange={handleFieldChange}
+                                        data-field={field.name}
+                                        required
+                                        class="form-input"
+                                    ></lightning-input>
+                                </template>
+                                <template if:false={field.required}>
+                                    <lightning-input
+                                        type="text"
+                                        label={field.label}
+                                        placeholder="Enter card number (optional)"
+                                        value="{getFieldValue(field.name)}"
+                                        onchange={handleFieldChange}
+                                        data-field={field.name}
+                                        class="form-input"
+                                    ></lightning-input>
+                                </template>
+                            </template>
+                        </div>
+                    </template>
+
+                    <!-- Notes -->
+                    <div class="form-field">
+                        <lightning-textarea
+                            label="Notes"
+                            placeholder="Add optional notes..."
+                            value={paymentNote}
+                            onchange={handleNotesChange}
+                            rows="3"
+                            class="form-input"
+                        ></lightning-textarea>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="form-actions">
+                        <lightning-button
+                            label="Cancel"
+                            variant="neutral"
+                            onclick={resetPaymentForm}
+                            class="action-button cancel-button"
+                        ></lightning-button>
+                        <lightning-button
+                            label="Pay Now"
+                            variant="brand"
+                            onclick={handleSubmitPayment}
+                            disabled={isPayButtonDisabled}
+                            title="Submit the payment"
+                            class="action-button pay-button"
+                        ></lightning-button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- No Data Message -->
+        <div if:false={hasInvoiceData} class="slds-m-around_medium">
+            <lightning-alert
+                if:false={errorMessage}
+                type="info"
+                title="No Data"
+                message="Please pass a valid invoice record ID"
+            ></lightning-alert>
+        </div>
+    </div>
+
+    <!-- Payment History Modal -->
+    <template if:true={showPaymentHistoryModal}>
+        <div class="modal-overlay" onclick={closePaymentHistory}>
+            <div class="modal-dialog" onclick={handleModalClick}>
+                <div class="modal-header">
+                    <h3 class="modal-title">Payment History</h3>
+                    <button class="modal-close" onclick={closePaymentHistory}>×</button>
+                </div>
+                <div class="modal-body">
+                    <template if:true={paymentHistory} if:false={isEmptyPaymentHistory}>
+                        <div class="history-table-wrapper">
+                            <table class="history-table">
+                                <thead>
+                                    <tr class="table-header-row">
+                                        <th class="table-header-cell">Payment Date</th>
+                                        <th class="table-header-cell">Method</th>
+                                        <th class="table-header-cell">Amount</th>
+                                        <th class="table-header-cell">Transaction ID</th>
+                                        <th class="table-header-cell">Status</th>
+                                        <th class="table-header-cell">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <template for:each={paymentHistory} for:item="payment">
+                                        <tr key={payment.Id} class="table-body-row">
+                                            <td class="table-body-cell">
+                                                <lightning-formatted-date-time
+                                                    value={payment.AMERP_Payment_Date__c}
+                                                    year="numeric"
+                                                    month="short"
+                                                    day="numeric"
+                                                    hour="2-digit"
+                                                    minute="2-digit"
+                                                ></lightning-formatted-date-time>
+                                            </td>
+                                            <td class="table-body-cell">{payment.AMERP_Payment_Mode__c}</td>
+                                            <td class="table-body-cell amount-cell">
+                                                <lightning-formatted-number
+                                                    value={payment.AMERP_Payment_Amount__c}
+                                                    format-style="currency"
+                                                    currency-code="INR"
+                                                ></lightning-formatted-number>
+                                            </td>
+                                            <td class="table-body-cell transaction-id-cell">{getTransactionReference(payment)}</td>
+                                            <td class="table-body-cell">
+                                                <span class="status-badge status-success">✓ {payment.AMERP_Payment_Status__c}</span>
+                                            </td>
+                                            <td class="table-body-cell action-cell">
+                                                <button class="download-btn" title="Download invoice" onclick={handleDownloadInvoice} data-payment-id={payment.Id} data-invoice-id={payment.AMERP_Invoice__c}>📥 View Payment Details</button>
+                                            </td>
+                                        </tr>
+                                    </template>
+                                </tbody>
+                            </table>
+                        </div>
+                    </template>
+                    <template if:true={isEmptyPaymentHistory}>
+                        <div class="empty-history">
+                            <p>No payment history available for this invoice.</p>
+                        </div>
+                    </template>
+                </div>
+                <div class="modal-footer">
+                    <lightning-button
+                        label="Close"
+                        onclick={closePaymentHistory}
+                        variant="neutral"
+                    ></lightning-button>
+                </div>
+            </div>
+        </div>
+    </template>
+</template>
