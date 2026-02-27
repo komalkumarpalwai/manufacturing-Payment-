@@ -19,22 +19,104 @@
 .history-button-container {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 1rem;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    align-items: center;
+}
+
+/* Button Wrapper with Tooltip */
+.button-wrapper {
+    position: relative;
+}
+
+.refresh-button-wrapper {
+    display: inline-block;
+}
+
+/* Tooltip Text */
+.tooltip-text {
+    visibility: hidden;
+    background-color: #1a3a5c;
+    color: white;
+    text-align: center;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 1000;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    font-size: 0.85rem;
+    font-weight: 500;
+    box-shadow: 0 4px 12px rgba(26, 58, 92, 0.3);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #1a3a5c transparent transparent transparent;
+}
+
+.refresh-button-wrapper:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Action Button Styles */
+.action-button {
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-button ::part(button) {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+    font-weight: 700;
+    border-radius: 8px;
+    padding: 0.825rem 1.75rem;
+    border: none;
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+    font-size: 0.95rem;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.action-button ::part(button):hover {
+    background: linear-gradient(135deg, #0284c7 0%, #0369a1 100%);
+    box-shadow: 0 8px 24px rgba(14, 165, 233, 0.4);
+    transform: translateY(-3px);
+}
+
+.action-button ::part(button):active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.25);
+}
+
+.refresh-button ::part(button) {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.refresh-button ::part(button):hover {
+    background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+    box-shadow: 0 8px 24px rgba(245, 158, 11, 0.4);
 }
 
 .history-button ::part(button) {
-    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
-    color: white;
-    font-weight: 600;
-    border-radius: 6px;
-    padding: 0.75rem 1.5rem;
-    box-shadow: 0 4px 12px rgba(14, 165, 233, 0.2);
-    transition: all 0.3s ease;
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
 }
 
 .history-button ::part(button):hover {
-    box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
-    transform: translateY(-2px);
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.4);
 }
 
 /* Completion Message */
@@ -338,39 +420,43 @@
 }
 
 .payment-details-card {
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.06);
-    border: 1px solid #e5e7eb;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+    border: 1px solid #e2e8f0;
     overflow: hidden;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .payment-details-card:hover {
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(0, 0, 0, 0.08);
+    transform: translateY(-4px);
+    border-color: #cbd5e1;
 }
 
 /* Card Header */
 .payment-card-header {
-    background-color: #ffffff;
-    border-bottom: 1px solid #e5e7eb;
-    padding: 1.5rem;
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    border-bottom: none;
+    padding: 2rem;
 }
 
 .card-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1f2937;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #ffffff;
     margin: 0;
-    letter-spacing: -0.2px;
+    letter-spacing: -0.3px;
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Form Container */
 .payment-form-container {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
-    padding: 1.5rem;
+    gap: 1.75rem;
+    padding: 2.5rem;
 }
 
 /* Form Field */
@@ -382,35 +468,47 @@
 
 /* Input Base Styling */
 .form-input ::part(label) {
-    font-weight: 500;
-    color: #374151;
-    font-size: 0.9rem;
-    margin-bottom: 0.4rem;
+    font-weight: 600;
+    color: #1e293b;
+    font-size: 0.95rem;
+    margin-bottom: 0.65rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.form-input ::part(required) {
+    color: #ef4444;
+    font-weight: 700;
+    font-size: 1.1rem;
 }
 
 .form-input ::part(input),
 .form-input ::part(textarea),
 .form-input ::part(combobox) {
-    border-radius: 8px;
-    border: 1px solid #d1d5db;
-    padding: 0.625rem 0.875rem;
-    font-size: 0.9rem;
+    border-radius: 10px;
+    border: 2px solid #e2e8f0;
+    padding: 0.875rem 1.125rem;
+    font-size: 0.95rem;
     background-color: #ffffff;
-    transition: all 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .form-input ::part(input):focus,
-.form-input ::part(textarea):focus {
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+.form-input ::part(textarea):focus,
+.form-input ::part(combobox):focus {
+    border-color: #0ea5e9;
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.15), inset 0 2px 4px rgba(0, 0, 0, 0.02);
     outline: none;
     background-color: #f0f9ff;
 }
 
 .form-input ::part(input):hover,
-.form-input ::part(textarea):hover {
-    border-color: #9ca3af;
-    background-color: #fafbfc;
+.form-input ::part(textarea):hover,
+.form-input ::part(combobox):hover {
+    border-color: #cbd5e1;
+    background-color: #f8fafc;
 }
 
 .form-input ::part(textarea) {
@@ -422,50 +520,56 @@
 .form-actions {
     display: flex;
     justify-content: flex-end;
-    gap: 0.875rem;
-    margin-top: 0.5rem;
-    padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
+    gap: 1.25rem;
+    margin-top: 1.5rem;
+    padding-top: 2rem;
+    border-top: 2px solid #e2e8f0;
 }
 
 /* Cancel Button */
 .cancel-button ::part(button) {
-    border-radius: 8px;
-    padding: 0.625rem 1.5rem;
-    border: 1px solid #d1d5db;
-    background-color: #ffffff;
-    color: #374151;
-    font-weight: 500;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
+    border-radius: 10px;
+    padding: 0.85rem 2rem;
+    border: 2px solid #cbd5e1;
+    background-color: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
+    letter-spacing: 0.3px;
 }
 
 .cancel-button ::part(button):hover {
-    background-color: #f3f4f6;
-    border-color: #9ca3af;
+    background-color: #e2e8f0;
+    border-color: #94a3b8;
+    color: #1e293b;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .cancel-button ::part(button):active {
-    background-color: #e5e7eb;
+    background-color: #cbd5e1;
+    transform: translateY(0px);
 }
 
 /* Pay Now Button */
 .pay-button ::part(button) {
-    border-radius: 8px;
-    padding: 0.625rem 1.75rem;
-    background-color: #10b981;
+    border-radius: 10px;
+    padding: 0.85rem 2.5rem;
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
     border: none;
     color: #ffffff;
-    font-weight: 600;
-    font-size: 0.9rem;
-    transition: all 0.2s ease;
+    font-weight: 700;
+    font-size: 0.95rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     cursor: pointer;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 4px 16px rgba(16, 185, 129, 0.3);
+    letter-spacing: 0.3px;
 }
 
 .pay-button ::part(button):hover:not(:disabled) {
-    background-color: #059669;
+    background: linear-gradient(135deg, #059669 0%, #047857 100%);
     box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     transform: translateY(-1px);
 }

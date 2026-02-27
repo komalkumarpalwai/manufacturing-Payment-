@@ -21,11 +21,21 @@
     <div if:false={isSaving} class="payment-container" lwc:ref="scrollContainer">
         <!-- View Payment History Button (Top Right) -->
         <div class="history-button-container">
+            <div class="button-wrapper refresh-button-wrapper">
+                <lightning-button
+                    label="Refresh Payments History"
+                    onclick={handleRefreshData}
+                    variant="brand"
+                    class="action-button refresh-button"
+                    title="Click to refresh the latest payment history. Do NOT click while processing payment!"
+                ></lightning-button>
+                <div class="tooltip-text">Click Refresh to load the latest payment history. Avoid refreshing during payment processing</div>
+            </div>
             <lightning-button
                 label="📋 View Payment History"
                 onclick={openPaymentHistory}
-                variant="neutral"
-                class="history-button"
+                variant="brand"
+                class="action-button history-button"
             ></lightning-button>
         </div>
 
@@ -153,35 +163,50 @@
                                     options={cardTypeOptions}
                                     onchange={handleCardTypeChange}
                                     required={field.required}
-                                    placeholder="Select option"
+                                    placeholder="Select Card Type"
+                                    class="form-input"
+                                ></lightning-combobox>
+                            </template>
+
+                            <!-- UPI App Name Picklist Combobox -->
+                            <template if:true="{isUpiAppNameField(field.name)}">
+                                <lightning-combobox
+                                    label={field.label}
+                                    value="{getFieldValue(field.name)}"
+                                    options={upiAppNameOptions}
+                                    onchange={handleUpiAppNameChange}
+                                    required={field.required}
+                                    placeholder="Select UPI App"
                                     class="form-input"
                                 ></lightning-combobox>
                             </template>
 
                             <!-- Text Input Fields -->
                             <template if:false="{isCardTypeField(field.name)}">
-                                <template if:true={field.required}>
-                                    <lightning-input
-                                        type="text"
-                                        label={field.label}
-                                        placeholder="Enter card holder name"
-                                        value="{getFieldValue(field.name)}"
-                                        onchange={handleFieldChange}
-                                        data-field={field.name}
-                                        required
-                                        class="form-input"
-                                    ></lightning-input>
-                                </template>
-                                <template if:false={field.required}>
-                                    <lightning-input
-                                        type="text"
-                                        label={field.label}
-                                        placeholder="Enter card number (optional)"
-                                        value="{getFieldValue(field.name)}"
-                                        onchange={handleFieldChange}
-                                        data-field={field.name}
-                                        class="form-input"
-                                    ></lightning-input>
+                                <template if:false="{isUpiAppNameField(field.name)}">
+                                    <template if:true={field.required}>
+                                        <lightning-input
+                                            type="text"
+                                            label={field.label}
+                                            placeholder="{getFieldPlaceholder(field.name)}"
+                                            value="{getFieldValue(field.name)}"
+                                            onchange={handleFieldChange}
+                                            data-field={field.name}
+                                            required
+                                            class="form-input"
+                                        ></lightning-input>
+                                    </template>
+                                    <template if:false={field.required}>
+                                        <lightning-input
+                                            type="text"
+                                            label={field.label}
+                                            placeholder="{getFieldPlaceholder(field.name)}"
+                                            value="{getFieldValue(field.name)}"
+                                            onchange={handleFieldChange}
+                                            data-field={field.name}
+                                            class="form-input"
+                                        ></lightning-input>
+                                    </template>
                                 </template>
                             </template>
                         </div>

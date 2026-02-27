@@ -43,6 +43,9 @@ public with sharing class InvoicePayments {
         
         @AuraEnabled
         public String upiId { get; set; }
+
+        @AuraEnabled
+        public String nameOnUpi { get; set; }
         
         @AuraEnabled
         public String upiReferenceNumber { get; set; }
@@ -146,6 +149,36 @@ public with sharing class InvoicePayments {
     }
 
     /**
+     * Check if transaction reference exists for a payment
+     * @param paymentId The Id of the payment record
+     * @param paymentMode The payment mode
+     * @return true if transaction reference is set
+     */
+    private static Boolean hasTransactionReference(Id paymentId, String paymentMode) {
+        AMERP_Invoice_Payment__c payment = [
+            SELECT AMERP_UPI_Reference_Numbe__c, AMERP_Transaction_Id__c, AMERP_Transaction_Reference__c
+            FROM AMERP_Invoice_Payment__c
+            WHERE Id = :paymentId
+            LIMIT 1
+        ];
+        
+        switch on paymentMode {
+            when 'UPI' {
+                return String.isNotBlank(payment.AMERP_UPI_Reference_Numbe__c);
+            }
+            when 'Card', 'Cash' {
+                return String.isNotBlank(payment.AMERP_Transaction_Id__c);
+            }
+            when 'Bank Transfer' {
+                return String.isNotBlank(payment.AMERP_Transaction_Reference__c);
+            }
+            when else {
+                return false;
+            }
+        }
+    }
+
+    /**
      * Creates a new invoice payment record
      * @param wrapper InvoicePaymentWrapper containing payment details
      * @return Id of the created payment record
@@ -173,19 +206,36 @@ public with sharing class InvoicePayments {
                 when 'Cash' {
                     payment.AMERP_Cash_Received_By__c = wrapper.cashReceivedBy;
                     payment.AMERP_Cash_Receipt_Number__c = wrapper.cashReceiptNumber;
+                    // Store transaction ID if provided
+                    if (String.isNotBlank(wrapper.cashReceiptNumber)) {
+                        payment.AMERP_Transaction_Id__c = wrapper.cashReceiptNumber;
+                    }
                 }
                 when 'UPI' {
                     payment.AMERP_UPI_App_Name__c = wrapper.upiAppName;
                     payment.AMERP_UPI_Id__c = wrapper.upiId;
+                    payment.AMERP_Name_On_Upi__c = wrapper.nameOnUpi;
+                    // Store transaction ID if provided
+                    if (String.isNotBlank(wrapper.upiReferenceNumber)) {
+                        payment.AMERP_UPI_Reference_Numbe__c = wrapper.upiReferenceNumber;
+                    }
                 }
                 when 'Card' {
                     payment.AMERP_Card_Holder_Name__c = wrapper.cardHolderName;
                     payment.AMERP_Card_Number__c = wrapper.cardNumber;
                     payment.AMERP_Card_Type__c = wrapper.cardType;
+                    // Store transaction ID if provided
+                    if (String.isNotBlank(wrapper.transactionId)) {
+                        payment.AMERP_Transaction_Id__c = wrapper.transactionId;
+                    }
                 }
                 when 'Bank Transfer' {
                     payment.AMERP_Bank_Name__c = wrapper.bankName;
                     payment.AMERP_IFSC_Code__c = wrapper.ifscCode;
+                    // Store transaction ID if provided
+                    if (String.isNotBlank(wrapper.transactionReference)) {
+                        payment.AMERP_Transaction_Reference__c = wrapper.transactionReference;
+                    }
                 }
             }
 
@@ -197,11 +247,13 @@ public with sharing class InvoicePayments {
 
             insert payment;
 
-            // Generate unique transaction reference based on payment mode and record Id
-            String transactionReference = generateTransactionReference(payment.Id, wrapper.paymentMode, wrapper);
-            
-            // Update payment record with generated transaction reference
-            payment = updatePaymentWithTransactionRef(payment.Id, transactionReference, wrapper.paymentMode);
+            // If no transaction reference was provided, generate one
+            if (!hasTransactionReference(payment.Id, wrapper.paymentMode)) {
+                String transactionReference = generateTransactionReference(payment.Id, wrapper.paymentMode, wrapper);
+                
+                // Update payment record with generated transaction reference
+                payment = updatePaymentWithTransactionRef(payment.Id, transactionReference, wrapper.paymentMode);
+            }
 
             return payment.Id;
         } catch (System.NoAccessException nae) {

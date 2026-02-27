@@ -47,14 +47,25 @@ export default class InvoicePayments extends LightningElement {
         { label: 'Others', value: 'Others' }
     ];
 
+    // UPI App Name options
+    upiAppNameOptions = [
+        { label: 'GPay', value: 'GPay' },
+        { label: 'PhonePe', value: 'PhonePe' },
+        { label: 'Paytm', value: 'Paytm' },
+        { label: 'BHIM', value: 'BHIM' },
+        { label: 'Other', value: 'Other' }
+    ];
+
     // Dynamic field templates based on payment mode
     paymentModeFields = {
         'Cash': [
-            { name: 'cashReceivedBy', label: 'Cash Received By', type: 'text', required: true }
+            { name: 'cashReceivedBy', label: 'Cash Received By', type: 'text', required: true },
+            { name: 'cashReceiptNumber', label: 'Cash Receipt Number', type: 'text', required: true }
         ],
         'UPI': [
-            { name: 'upiAppName', label: 'UPI App Name', type: 'text', required: true },
-            { name: 'upiId', label: 'UPI ID', type: 'text', required: true }
+            { name: 'upiAppName', label: 'UPI App Name', type: 'picklist', required: true },
+            { name: 'upiId', label: 'UPI ID', type: 'text', required: true },
+            { name: 'nameOnUpi', label: 'Name On UPI', type: 'text', required: true }
         ],
         'Card': [
             { name: 'cardHolderName', label: 'Card Holder Name', type: 'text', required: true },
@@ -173,6 +184,13 @@ export default class InvoicePayments extends LightningElement {
     }
 
     /**
+     * Handle UPI app name selection
+     */
+    handleUpiAppNameChange(event) {
+        this.formFields.upiAppName = event.detail.value;
+    }
+
+    /**
      * Handle payment notes
      */
     handleNotesChange(event) {
@@ -190,25 +208,180 @@ export default class InvoicePayments extends LightningElement {
     }
 
     /**
+     * Generate UPI Reference Number with PaymentType-Amount-DateTime_Seconds format
+     * Format: UPI-DDMMYY-HHMMSS-Amount-RandomSuffix
+     */
+    generateUpiReferenceNumber(amount) {
+        const now = new Date();
+        
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = String(now.getFullYear()).slice(-2);
+        
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+        
+        const dateStr = `${day}${month}${year}`;
+        const timeStr = `${hours}${minutes}${seconds}`;
+        const amountStr = String(Math.floor(amount)).padStart(8, '0');
+        
+        // Generate random alphanumeric suffix (4 characters)
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let randomSuffix = '';
+        for (let i = 0; i < 4; i++) {
+            randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        
+        // Add milliseconds for extra uniqueness
+        const uniqueId = String(milliseconds) + randomSuffix;
+        
+        return `UPI-${dateStr}-${timeStr}-${amountStr}-${uniqueId}`;
+    }
+
+    /**
      * Generate Transaction ID with mode-specific prefix
      */
-    generateTransactionId(mode) {
-        const uniqueId = this.generateUniqueId();
-        
+    generateTransactionId(mode, amount = 0) {
         switch(mode) {
             case 'UPI':
-                return `UPI-${uniqueId}`;
+                return this.generateUpiReferenceNumber(amount);
             case 'Card':
-                const cardType = this.formFields.cardType || 'CARD';
-                return `${cardType}-${uniqueId}`;
+                return this.generateCardTransactionId(amount);
             case 'Bank Transfer':
-                const bankName = (this.formFields.bankName || 'BANK').substring(0, 4).toUpperCase();
-                return `${bankName}-${uniqueId}`;
+                return this.generateBankTransactionId(amount);
             case 'Cash':
-                return `CASH-${uniqueId}`;
+                return this.generateCashReceiptNumber(amount);
             default:
-                return `TXN-${uniqueId}`;
+                return this.generateGenericTransactionId(amount);
         }
+    }
+
+    /**
+     * Generate Card Transaction ID
+     */
+    generateCardTransactionId(amount) {
+        const now = new Date();
+        
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = String(now.getFullYear()).slice(-2);
+        
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+        
+        const dateStr = `${day}${month}${year}`;
+        const timeStr = `${hours}${minutes}${seconds}`;
+        const amountStr = String(Math.floor(amount)).padStart(8, '0');
+        const cardType = (this.formFields.cardType || 'CARD').substring(0, 4).toUpperCase();
+        
+        // Generate random alphanumeric suffix
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let randomSuffix = '';
+        for (let i = 0; i < 4; i++) {
+            randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        
+        const uniqueId = String(milliseconds) + randomSuffix;
+        
+        return `${cardType}-${dateStr}-${timeStr}-${amountStr}-${uniqueId}`;
+    }
+
+    /**
+     * Generate Bank Transfer Transaction ID
+     */
+    generateBankTransactionId(amount) {
+        const now = new Date();
+        
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = String(now.getFullYear()).slice(-2);
+        
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+        
+        const dateStr = `${day}${month}${year}`;
+        const timeStr = `${hours}${minutes}${seconds}`;
+        const amountStr = String(Math.floor(amount)).padStart(8, '0');
+        const bankName = (this.formFields.bankName || 'BANK').substring(0, 4).toUpperCase();
+        
+        // Generate random alphanumeric suffix
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let randomSuffix = '';
+        for (let i = 0; i < 4; i++) {
+            randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        
+        const uniqueId = String(milliseconds) + randomSuffix;
+        
+        return `${bankName}-${dateStr}-${timeStr}-${amountStr}-${uniqueId}`;
+    }
+
+    /**
+     * Generate Cash Receipt Number
+     */
+    generateCashReceiptNumber(amount) {
+        const now = new Date();
+        
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = String(now.getFullYear()).slice(-2);
+        
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+        
+        const dateStr = `${day}${month}${year}`;
+        const timeStr = `${hours}${minutes}${seconds}`;
+        const amountStr = String(Math.floor(amount)).padStart(8, '0');
+        
+        // Generate random alphanumeric suffix
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let randomSuffix = '';
+        for (let i = 0; i < 4; i++) {
+            randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        
+        const uniqueId = String(milliseconds) + randomSuffix;
+        
+        return `CASH-${dateStr}-${timeStr}-${amountStr}-${uniqueId}`;
+    }
+
+    /**
+     * Generate Generic Transaction ID
+     */
+    generateGenericTransactionId(amount) {
+        const now = new Date();
+        
+        const day = String(now.getDate()).padStart(2, '0');
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const year = String(now.getFullYear()).slice(-2);
+        
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const seconds = String(now.getSeconds()).padStart(2, '0');
+        const milliseconds = String(now.getMilliseconds()).padStart(3, '0');
+        
+        const dateStr = `${day}${month}${year}`;
+        const timeStr = `${hours}${minutes}${seconds}`;
+        const amountStr = String(Math.floor(amount)).padStart(8, '0');
+        
+        // Generate random alphanumeric suffix
+        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let randomSuffix = '';
+        for (let i = 0; i < 4; i++) {
+            randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        
+        const uniqueId = String(milliseconds) + randomSuffix;
+        
+        return `TXN-${dateStr}-${timeStr}-${amountStr}-${uniqueId}`;
     }
 
     /**
@@ -225,7 +398,7 @@ export default class InvoicePayments extends LightningElement {
         try {
             // Auto-generate Transaction ID for all payment modes
             const formFieldsCopy = { ...this.formFields };
-            const transactionId = this.generateTransactionId(this.selectedPaymentMode);
+            const transactionId = this.generateTransactionId(this.selectedPaymentMode, parseFloat(this.paymentAmount));
             
             // Store transaction ID in appropriate field based on payment mode
             switch(this.selectedPaymentMode) {
@@ -265,8 +438,8 @@ export default class InvoicePayments extends LightningElement {
                 // Reset form
                 this.resetPaymentForm();
                 
-                // Refresh invoice data
-                await refreshApex(this.wiredInvoiceResult);
+                // Refresh both invoice and payment history data
+                await this.refreshAllData();
             }
         } catch (error) {
             const errorMsg = this.getErrorMessage(error);
@@ -303,6 +476,38 @@ export default class InvoicePayments extends LightningElement {
         }
 
         return true;
+    }
+
+    /**
+     * Refresh all data (invoice and payment history)
+     */
+    async refreshAllData() {
+        try {
+            if (this.wiredInvoiceResult) {
+                await refreshApex(this.wiredInvoiceResult);
+            }
+            if (this.wiredPaymentHistoryResult) {
+                await refreshApex(this.wiredPaymentHistoryResult);
+            }
+        } catch (error) {
+            console.error('Error refreshing data:', error);
+        }
+    }
+
+    /**
+     * Handle refresh data button click
+     */
+    async handleRefreshData() {
+        this.isLoading = true;
+        try {
+            await this.refreshAllData();
+            this.showToast('Success', 'Data refreshed successfully', 'success');
+        } catch (error) {
+            this.showToast('Error', 'Failed to refresh data', 'error');
+            console.error('Refresh error:', error);
+        } finally {
+            this.isLoading = false;
+        }
     }
 
     /**
@@ -396,10 +601,34 @@ export default class InvoicePayments extends LightningElement {
     }
 
     /**
+     * Get placeholder text based on field name
+     */
+    getFieldPlaceholder(fieldName) {
+        const placeholders = {
+            'cashReceivedBy': 'Enter name of person who received cash',
+            'cashReceiptNumber': 'Enter cash receipt number',
+            'upiId': 'Enter UPI ID (e.g., user@upiapp)',
+            'nameOnUpi': 'Enter name on UPI account',
+            'cardHolderName': 'Enter card holder name',
+            'cardNumber': 'Enter card number',
+            'bankName': 'Enter bank name',
+            'ifscCode': 'Enter IFSC code'
+        };
+        return placeholders[fieldName] || '';
+    }
+
+    /**
      * Check if the field is card type field
      */
     isCardTypeField(fieldName) {
         return fieldName === 'cardType';
+    }
+
+    /**
+     * Check if the field is UPI app name field
+     */
+    isUpiAppNameField(fieldName) {
+        return fieldName === 'upiAppName';
     }
 
     /**
@@ -444,8 +673,11 @@ export default class InvoicePayments extends LightningElement {
         }
 
         try {
-            // Open the Visualforce page with the invoice ID parameter
-            const vfPageUrl = `/apex/InvoicePaymentPage?invoiceId=${invoiceId}`;
+            // Open the Visualforce page with both invoice ID and payment ID parameters
+            let vfPageUrl = `/apex/InvoicePaymentPage?invoiceId=${invoiceId}`;
+            if (paymentId) {
+                vfPageUrl += `&paymentId=${paymentId}`;
+            }
             console.log('Opening VF page:', vfPageUrl);
             window.open(vfPageUrl, '_blank');
             this.showToast('Success', 'Invoice PDF is being generated', 'success');

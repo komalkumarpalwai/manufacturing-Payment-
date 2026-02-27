@@ -2,6 +2,7 @@ public with sharing class InvoicePaymentController {
     
     public AMERP_Custom_Invoice__c invoice { get; set; }
     public AMERP_Invoice_Payment__c latestPayment { get; set; }
+    public AMERP_Invoice_Payment__c specificPayment { get; set; }
     public String errorMessage { get; set; }
     
     // Customer details
@@ -19,13 +20,17 @@ public with sharing class InvoicePaymentController {
     public Decimal amountPaid { get; set; }
     public Decimal balanceDue { get; set; }
     
+    // Track if we're showing a specific payment or the latest
+    public Boolean isSpecificPayment { get; set; }
+    
     // ─────────────────────────────────────────────────────────────────
-    // CONSTRUCTOR — unchanged logic, added orderNumber population
+    // CONSTRUCTOR — accepts paymentId parameter to show specific payment
     // ─────────────────────────────────────────────────────────────────
     public InvoicePaymentController() {
         try {
-            // Get invoiceId from URL parameters
+            // Get invoiceId and paymentId from URL parameters
             String invoiceId = ApexPages.currentPage().getParameters().get('invoiceId');
+            String paymentId = ApexPages.currentPage().getParameters().get('paymentId');
             
             // Handle null or empty invoiceId
             if (String.isBlank(invoiceId)) {
@@ -99,33 +104,116 @@ public with sharing class InvoicePaymentController {
                 }
             }
             
-            // Query latest successful payment for this invoice
-            List<AMERP_Invoice_Payment__c> payments = [
-                SELECT Id, 
-                       Name,
-                       AMERP_Invoice__c,
-                       AMERP_Payment_Amount__c,
-                       AMERP_Payment_Date__c,
-                       AMERP_Payment_Mode__c,
-                       AMERP_Payment_Status__c,
-                       AMERP_Transaction_Reference__c
-                FROM AMERP_Invoice_Payment__c
-                WHERE AMERP_Invoice__c = :invoiceId 
-                AND   AMERP_Payment_Status__c IN ('Received', 'Successful')
-                ORDER BY AMERP_Payment_Date__c DESC
-                LIMIT 1
-            ];
-            
-            if (!payments.isEmpty()) {
-                latestPayment = payments[0];
+            // Handle specific payment vs latest payment
+            if (String.isNotBlank(paymentId)) {
+                // Query specific payment
+                List<AMERP_Invoice_Payment__c> specificPayments = [
+                    SELECT Id, 
+                           Name,
+                           AMERP_Invoice__c,
+                           AMERP_Payment_Amount__c,
+                           AMERP_Payment_Date__c,
+                           AMERP_Payment_Mode__c,
+                           AMERP_Payment_Status__c,
+                           AMERP_Transaction_Reference__c,
+                           AMERP_UPI_Reference_Numbe__c,
+                           AMERP_Transaction_Id__c
+                    FROM AMERP_Invoice_Payment__c
+                    WHERE Id = :paymentId AND AMERP_Invoice__c = :invoiceId
+                    LIMIT 1
+                ];
+                
+                if (!specificPayments.isEmpty()) {
+                    specificPayment = specificPayments[0];
+                    latestPayment = specificPayment;
+                    isSpecificPayment = true;
+                    
+                    // Calculate balance AFTER this specific payment
+                    calculateBalanceAfterPayment(paymentId, invoiceId);
+                } else {
+                    errorMessage = 'Payment record not found.';
+                    return;
+                }
+            } else {
+                // Query latest successful payment for this invoice
+                List<AMERP_Invoice_Payment__c> payments = [
+                    SELECT Id, 
+                           Name,
+                           AMERP_Invoice__c,
+                           AMERP_Payment_Amount__c,
+                           AMERP_Payment_Date__c,
+                           AMERP_Payment_Mode__c,
+                           AMERP_Payment_Status__c,
+                           AMERP_Transaction_Reference__c,
+                           AMERP_UPI_Reference_Numbe__c,
+                           AMERP_Transaction_Id__c
+                    FROM AMERP_Invoice_Payment__c
+                    WHERE AMERP_Invoice__c = :invoiceId 
+                    AND   AMERP_Payment_Status__c IN ('Received', 'Successful')
+                    ORDER BY AMERP_Payment_Date__c DESC
+                    LIMIT 1
+                ];
+                
+                if (!payments.isEmpty()) {
+                    latestPayment = payments[0];
+                    isSpecificPayment = false;
+                }
             }
             
-            // Calculate amounts paid and balance due
-            amountPaid = invoice.AMERP_Total_Paid_Amount__c    != null ? invoice.AMERP_Total_Paid_Amount__c    : 0;
-            balanceDue = invoice.AMERP_Outstanding_Amount__c   != null ? invoice.AMERP_Outstanding_Amount__c   : 0;
+            // Calculate amounts paid and balance due (if not already calculated for specific payment)
+            if (!isSpecificPayment) {
+                amountPaid = invoice.AMERP_Total_Paid_Amount__c    != null ? invoice.AMERP_Total_Paid_Amount__c    : 0;
+                balanceDue = invoice.AMERP_Outstanding_Amount__c   != null ? invoice.AMERP_Outstanding_Amount__c   : 0;
+            }
             
         } catch (Exception e) {
             errorMessage = 'Error loading payment information: ' + e.getMessage();
+        }
+    }
+    
+    /**
+     * Calculate the balance remaining AFTER a specific payment was made
+     * @param paymentId The ID of the specific payment
+     * @param invoiceId The ID of the invoice
+     */
+    private void calculateBalanceAfterPayment(String paymentId, String invoiceId) {
+        try {
+            // Get all payments up to and including the specific payment, ordered by date
+            List<AMERP_Invoice_Payment__c> paymentsUpToThis = [
+                SELECT Id,
+                       AMERP_Payment_Amount__c,
+                       AMERP_Payment_Date__c,
+                       CreatedDate
+                FROM AMERP_Invoice_Payment__c
+                WHERE AMERP_Invoice__c = :invoiceId
+                AND   AMERP_Payment_Status__c IN ('Received', 'Successful')
+                ORDER BY AMERP_Payment_Date__c ASC, CreatedDate ASC
+            ];
+            
+            Decimal totalPaidUpToThisPayment = 0;
+            Boolean foundSpecificPayment = false;
+            
+            for (AMERP_Invoice_Payment__c payment : paymentsUpToThis) {
+                totalPaidUpToThisPayment += payment.AMERP_Payment_Amount__c != null ? payment.AMERP_Payment_Amount__c : 0;
+                
+                if (payment.Id == paymentId) {
+                    foundSpecificPayment = true;
+                    break;
+                }
+            }
+            
+            if (foundSpecificPayment) {
+                amountPaid = totalPaidUpToThisPayment;
+                balanceDue = (invoice.AMERP_Invoice_Amount__c != null ? invoice.AMERP_Invoice_Amount__c : 0) - amountPaid;
+                if (balanceDue < 0) {
+                    balanceDue = 0;
+                }
+            }
+        } catch (Exception e) {
+            // Fallback to current amounts if calculation fails
+            amountPaid = invoice.AMERP_Total_Paid_Amount__c    != null ? invoice.AMERP_Total_Paid_Amount__c    : 0;
+            balanceDue = invoice.AMERP_Outstanding_Amount__c   != null ? invoice.AMERP_Outstanding_Amount__c   : 0;
+            System.debug('Error calculating balance after payment: ' + e.getMessage());
         }
     }
     
