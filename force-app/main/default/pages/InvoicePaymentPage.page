@@ -1,9 +1,8 @@
-<apex:page   renderAs="pdf"
-controller="InvoicePaymentController"
+<apex:page renderAs="pdf"
+           controller="InvoicePaymentController"
            showHeader="false"
            sidebar="false"
            standardStylesheets="false"
-          
            contentType="application/pdf">
 <html>
 <head>
@@ -14,154 +13,153 @@ controller="InvoicePaymentController"
 <body>
 
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
-<tr><td style="padding: 24px 36px;">
+<tr><td style="padding: 24px 36px 20px 36px;">
 
-  <!-- ════════════════════════════
-       HEADER
-  ════════════════════════════ -->
-  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom: 8px;">
+  <!-- ══════════════════════════════
+       TOP HEADER ROW
+  ══════════════════════════════ -->
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
     <tr>
-      <td width="50%" style="vertical-align: bottom;">
-        <img src="{!URLFOR($Resource.Logo)}" height="38" style="display:block; margin-bottom:5px;"/>
-        <div style="font-size:13px; font-weight:bold; color:#1a3a5c;">KRISH CARBON PVT LTD</div>
-        <div style="font-size:8.5px; color:#777; margin-top:2px;">IndiaLand Tech Park, Coimbatore, Tamil Nadu, India</div>
+      <td width="50%" style="vertical-align:middle;">
+        <table border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="vertical-align:middle; padding-right:8px;">
+              <img src="{!URLFOR($Resource.Logo)}" height="32" style="display:block;"/>
+            </td>
+            <td style="vertical-align:middle;">
+              <div style="font-size:14px; font-weight:bold; color:#1a3a5c;">KRISH CARBON PVT LTD</div>
+              <div style="font-size:8.5px; color:#555; margin-top:1px;">Sustainable Energy Solutions</div>
+            </td>
+          </tr>
+        </table>
       </td>
-      <td width="50%" style="vertical-align: bottom; text-align: right;">
-        <div style="font-size:20px; font-weight:bold; color:#1a3a5c; letter-spacing:3px;">PAYMENT RECEIPT</div>
-        <div style="font-size:8px; color:#999; margin-top:3px; letter-spacing:1px;">OFFICIAL ACKNOWLEDGEMENT OF PAYMENT</div>
+      <td width="50%" style="text-align:right; vertical-align:middle;">
       </td>
     </tr>
   </table>
 
-  <!-- Double rule -->
-  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:3px;">
-    <tr><td style="border-top:3px solid #1a3a5c; line-height:0; font-size:0;">&#160;</td></tr>
-  </table>
-  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
-    <tr><td style="border-top:1px solid #7a9cbf; line-height:0; font-size:0;">&#160;</td></tr>
-  </table>
-
-  <!-- ════════════════════════════
-       STATUS BANNER
-  ════════════════════════════ -->
-  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+  <!-- ══════════════════════════════
+       BLUE BANNER
+       — shows Amount Paid for THIS payment (not Invoice Total)
+  ══════════════════════════════ -->
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:14px; background-color:#1740a8;">
     <tr>
-      <td style="border:1px solid #c5d5e8; border-left:4px solid #1a3a5c; padding:6px 12px; background-color:#eef3f9; font-size:10px;">
-        <strong style="color:#1a6e2a;">&#10004;&#160;{!invoice.AMERP_Payment_Status__c}</strong>
-        <span style="color:#bbb;">&#160;&#160;|&#160;&#160;</span>
-        <strong>Receipt No:</strong>&#160;{!latestPayment.Name}
-        <span style="color:#bbb;">&#160;&#160;|&#160;&#160;</span>
-        <strong>Payment Date:</strong>&#160;
-        <apex:outputText value="{0,date,dd MMM yyyy}">
-          <apex:param value="{!latestPayment.AMERP_Payment_Date__c}"/>
-        </apex:outputText>
-        <span style="color:#bbb;">&#160;&#160;|&#160;&#160;</span>
-        <strong>Invoice No:</strong>&#160;{!invoice.Name}
+      <td style="padding:20px 24px; vertical-align:bottom;">
+        <div style="font-size:26px; font-weight:bold; color:#ffffff; letter-spacing:1.5px;">PAYMENT RECEIPT</div>
+      </td>
+      <td style="padding:20px 24px; text-align:right; vertical-align:bottom;">
+        <div style="font-size:9px; color:#b8ccf0; letter-spacing:0.5px; margin-bottom:3px;">Amount Paid</div>
+        <div style="font-size:24px; font-weight:bold; color:#ffffff;">
+          &#8377;&#160;<apex:outputText value="{0,number,###,##0.00}">
+            <apex:param value="{!latestPayment.AMERP_Payment_Amount__c}"/>
+          </apex:outputText>
+        </div>
       </td>
     </tr>
   </table>
 
-  <!-- ════════════════════════════
-       TWO COLUMNS
-  ════════════════════════════ -->
-  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+  <!-- ══════════════════════════════
+       META STRIP
+  ══════════════════════════════ -->
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:20px; border:1px solid #d8e4f4; background-color:#f4f7fd;">
+    <tr>
+      <td style="padding:11px 18px; vertical-align:middle; width:33%;">
+        <div style="font-size:7.5px; color:#555; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:3px; font-weight:bold;">Receipt No</div>
+        <div style="font-size:11px; font-weight:bold; color:#111111;">{!latestPayment.Name}</div>
+      </td>
+      <td style="border-left:1px solid #d0daea; padding:11px 18px; vertical-align:middle; width:33%;">
+        <div style="font-size:7.5px; color:#555; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:3px; font-weight:bold;">Receipt Date</div>
+        <div style="font-size:11px; font-weight:bold; color:#111111;">
+          <apex:outputText value="{0,date,dd MMM yyyy}">
+            <apex:param value="{!latestPayment.AMERP_Payment_Date__c}"/>
+          </apex:outputText>
+        </div>
+      </td>
+      <td style="border-left:1px solid #d0daea; padding:11px 18px; vertical-align:middle; width:34%;">
+        <div style="font-size:7.5px; color:#555; text-transform:uppercase; letter-spacing:0.6px; margin-bottom:3px; font-weight:bold;">Payment Status</div>
+        <div style="font-size:11px; font-weight:bold; color:#c97000;">{!invoice.AMERP_Payment_Status__c}</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- ══════════════════════════════
+       TWO COLUMNS: INVOICE + CUSTOMER
+  ══════════════════════════════ -->
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
     <tr>
 
       <!-- LEFT: INVOICE DETAILS -->
-      <td width="48%" style="vertical-align:top; padding-right:7px;">
-        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <td width="50%" style="vertical-align:top; padding-right:22px;">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;">
           <tr>
-            <td style="background-color:#1a3a5c; color:#fff; font-size:9px; font-weight:bold; padding:5px 9px; letter-spacing:0.8px;">
-              INVOICE DETAILS
+            <td style="font-size:9px; font-weight:bold; color:#1740a8; text-transform:uppercase; letter-spacing:1px; border-bottom:2px solid #1740a8; padding-bottom:5px;">
+              Invoice Details
             </td>
           </tr>
         </table>
         <table width="100%" border="0" cellpadding="0" cellspacing="0">
           <tr>
-            <td style="width:105px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap; background-color:#f2f5fb;">Invoice No</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px; font-weight:bold; background-color:#f2f5fb;">{!invoice.Name}</td>
+            <td style="font-size:9.5px; color:#333333; padding:5px 0; width:125px; font-weight:bold;">Invoice Number</td>
+            <td style="font-size:9.5px; font-weight:bold; color:#111111; padding:5px 0;">{!invoice.Name}</td>
           </tr>
           <tr>
-            <!-- orderNumber is set in controller from AMERP_Order__r.OrderNumber -->
-            <td style="width:105px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap;">Order No</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px;">{!orderNumber}</td>
+            <td style="font-size:9.5px; color:#333333; padding:5px 0; font-weight:bold;">Order Reference</td>
+            <td style="font-size:9.5px; color:#111111; padding:5px 0;">{!orderNumber}</td>
           </tr>
           <tr>
-            <td style="width:105px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap; background-color:#f2f5fb;">Invoice Date</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px; background-color:#f2f5fb;">
+            <td style="font-size:9.5px; color:#333333; padding:5px 0; font-weight:bold;">Payment Mode</td>
+            <td style="font-size:9.5px; font-weight:bold; color:#111111; padding:5px 0;">{!latestPayment.AMERP_Payment_Mode__c}</td>
+          </tr>
+          <tr>
+            <td style="font-size:9.5px; color:#333333; padding:5px 0; font-weight:bold;">Invoice Date</td>
+            <td style="font-size:9.5px; color:#111111; padding:5px 0;">
               <apex:outputText value="{0,date,dd MMM yyyy}">
                 <apex:param value="{!invoice.AMERP_Invoice_Date__c}"/>
               </apex:outputText>
             </td>
           </tr>
           <tr>
-            <td style="width:105px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap;">Due Date</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px;">
+            <td style="font-size:9.5px; color:#333333; padding:5px 0; font-weight:bold;">Due Date</td>
+            <td style="font-size:9.5px; color:#111111; padding:5px 0;">
               <apex:outputText value="{0,date,dd MMM yyyy}">
                 <apex:param value="{!invoice.AMERP_Due_Date__c}"/>
               </apex:outputText>
             </td>
           </tr>
           <tr>
-            <td style="width:105px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap; background-color:#f2f5fb;">Invoice Amount</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px; font-weight:bold; background-color:#f2f5fb;">
-              <apex:outputText value="{0,number,###,##0.00}">
-                <apex:param value="{!invoice.AMERP_Invoice_Amount__c}"/>
-              </apex:outputText>
-            </td>
-          </tr>
-          <tr>
-            <td style="width:105px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap;">Status</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px; font-weight:bold; color:#1a6e2a;">{!invoice.AMERP_Payment_Status__c}</td>
-          </tr>
-          <tr>
-            <td style="width:105px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap; background-color:#f2f5fb;">Balance Due</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px; font-weight:bold; color:#c0392b; background-color:#f2f5fb;">
-              <apex:outputText value="{0,number,###,##0.00}">
-                <apex:param value="{!balanceDue}"/>
-              </apex:outputText>
-            </td>
+            <td style="font-size:9.5px; color:#333333; padding:5px 0; font-weight:bold;">Currency</td>
+            <td style="font-size:9.5px; color:#111111; padding:5px 0;">INR (&#8377;)</td>
           </tr>
         </table>
       </td>
 
       <!-- RIGHT: CUSTOMER DETAILS -->
-      <td width="48%" style="vertical-align:top; padding-left:7px;">
-        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <td width="50%" style="vertical-align:top; padding-left:22px; border-left:1px solid #e0e8f5;">
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:10px;">
           <tr>
-            <td style="background-color:#1a3a5c; color:#fff; font-size:9px; font-weight:bold; padding:5px 9px; letter-spacing:0.8px;">
-              CUSTOMER DETAILS
+            <td style="font-size:9px; font-weight:bold; color:#1740a8; text-transform:uppercase; letter-spacing:1px; border-bottom:2px solid #1740a8; padding-bottom:5px;">
+              Customer Details
             </td>
           </tr>
         </table>
-        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+        <table border="0" cellpadding="0" cellspacing="0">
           <tr>
-            <td style="width:90px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap; background-color:#f2f5fb;">Name</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px; font-weight:bold; background-color:#f2f5fb;">{!customerName}</td>
+            <td style="font-size:13px; font-weight:bold; color:#111111; padding-bottom:6px;">{!customerName}</td>
           </tr>
           <tr>
-            <td style="width:90px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap;">Address</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px;">{!customerAddress}</td>
+            <td style="font-size:9.5px; color:#333333; padding-bottom:2px;">{!customerAddress}</td>
           </tr>
           <tr>
-            <td style="width:90px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap; background-color:#f2f5fb;">City / PIN</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px; background-color:#f2f5fb;">{!customerCity}</td>
+            <td style="font-size:9.5px; color:#333333; padding-bottom:9px;">{!customerCity}</td>
           </tr>
           <tr>
-            <td style="width:90px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap;">Phone</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px;">{!customerPhone}</td>
+            <td style="font-size:9.5px; color:#333333; padding-bottom:3px;">&#9742; {!customerPhone}</td>
           </tr>
           <tr>
-            <td style="width:90px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap; background-color:#f2f5fb;">Email</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px; background-color:#f2f5fb;">{!customerEmail}</td>
+            <td style="font-size:9.5px; color:#333333; padding-bottom:3px;">&#9993; {!customerEmail}</td>
           </tr>
           <tr>
-            <td style="width:90px; border:1px solid #d0daea; border-top:none; padding:5px 8px; font-weight:bold; color:#1a3a5c; white-space:nowrap;">GST No</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px;">{!customerGST}</td>
-          </tr>
-          <tr>
-            <td style="width:90px; border:1px solid #d0daea; border-top:none; padding:5px 8px; background-color:#f2f5fb;">&#160;</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 8px; background-color:#f2f5fb;">&#160;</td>
+            <td style="font-size:9.5px; color:#333333;">GSTIN-{!customerGST}</td>
           </tr>
         </table>
       </td>
@@ -169,130 +167,142 @@ controller="InvoicePaymentController"
     </tr>
   </table>
 
-  <!-- ════════════════════════════
-       PAYMENT DETAILS
-  ════════════════════════════ -->
-  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:0;">
-    <tr><td style="border-top:2px solid #1a3a5c; line-height:0; font-size:0;">&#160;</td></tr>
-  </table>
-
-  <table width="100%" border="0" cellpadding="0" cellspacing="0">
+  <!-- ══════════════════════════════
+       PAYMENT BREAKDOWN
+  ══════════════════════════════ -->
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:8px;">
     <tr>
-      <td style="background-color:#1a3a5c; color:#fff; font-size:9px; font-weight:bold; padding:5px 9px; letter-spacing:0.8px; border:1px solid #1a3a5c;">
-        PAYMENT DETAILS
-      </td>
+      <td style="font-size:13px; font-weight:bold; color:#111111;">Payment Breakdown</td>
     </tr>
   </table>
 
-  <!-- Column headers — 5 columns, Transaction Ref added -->
+  <!-- Breakdown header -->
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
     <tr>
-      <td width="18%" style="border:1px solid #1a3a5c; border-top:none; background-color:#d6e4f0; padding:5px 8px; font-weight:bold; font-size:9px; color:#1a3a5c;">Payment No</td>
-      <td width="14%" style="border:1px solid #1a3a5c; border-top:none; border-left:none; background-color:#d6e4f0; padding:5px 8px; font-weight:bold; font-size:9px; color:#1a3a5c;">Payment Date</td>
-      <td width="16%" style="border:1px solid #1a3a5c; border-top:none; border-left:none; background-color:#d6e4f0; padding:5px 8px; font-weight:bold; font-size:9px; color:#1a3a5c;">Mode</td>
-      <td width="28%" style="border:1px solid #1a3a5c; border-top:none; border-left:none; background-color:#d6e4f0; padding:5px 8px; font-weight:bold; font-size:9px; color:#1a3a5c;">Transaction Ref</td>
-      <td width="12%" style="border:1px solid #1a3a5c; border-top:none; border-left:none; background-color:#d6e4f0; padding:5px 8px; font-weight:bold; font-size:9px; color:#1a3a5c; text-align:right;">Amt Paid</td>
-      <td width="12%" style="border:1px solid #1a3a5c; border-top:none; border-left:none; background-color:#d6e4f0; padding:5px 8px; font-weight:bold; font-size:9px; color:#1a3a5c; text-align:right;">Balance</td>
+      <td width="18%" style="background-color:#1740a8; padding:8px 10px; font-size:8.5px; font-weight:bold; color:#ffffff; text-transform:uppercase; letter-spacing:0.6px;">Payment No</td>
+      <td width="15%" style="background-color:#1740a8; padding:8px 10px; font-size:8.5px; font-weight:bold; color:#ffffff; text-transform:uppercase; letter-spacing:0.6px;">Date</td>
+      <td width="14%" style="background-color:#1740a8; padding:8px 10px; font-size:8.5px; font-weight:bold; color:#ffffff; text-transform:uppercase; letter-spacing:0.6px;">Method</td>
+      <td width="30%" style="background-color:#1740a8; padding:8px 10px; font-size:8.5px; font-weight:bold; color:#ffffff; text-transform:uppercase; letter-spacing:0.6px;">Reference</td>
+      <td width="11%" style="background-color:#1740a8; padding:8px 10px; font-size:8.5px; font-weight:bold; color:#ffffff; text-transform:uppercase; letter-spacing:0.6px; text-align:right;">Amount Paid</td>
     </tr>
   </table>
 
-  <!-- Payment data row -->
+  <!-- Breakdown data -->
   <apex:outputPanel rendered="{!latestPayment != null}">
-    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
-      <tr>
-        <td width="18%" style="border:1px solid #d0daea; border-top:none; padding:6px 8px; font-weight:bold;">{!latestPayment.Name}</td>
-        <td width="14%" style="border:1px solid #d0daea; border-top:none; border-left:none; padding:6px 8px;">
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+      <tr style="background-color:#f7f9fd;">
+        <td width="18%" style="padding:10px 10px; font-size:9.5px; font-weight:bold; color:#111111; border-bottom:1px solid #e0e8f5;">{!latestPayment.Name}</td>
+        <td width="15%" style="padding:10px 10px; font-size:9.5px; color:#222222; border-bottom:1px solid #e0e8f5;">
           <apex:outputText value="{0,date,dd MMM yyyy}">
             <apex:param value="{!latestPayment.AMERP_Payment_Date__c}"/>
           </apex:outputText>
         </td>
-        <td width="16%" style="border:1px solid #d0daea; border-top:none; border-left:none; padding:6px 8px;">{!latestPayment.AMERP_Payment_Mode__c}</td>
-        <!-- Transaction Reference — shows '—' if blank -->
-        <td width="28%" style="border:1px solid #d0daea; border-top:none; border-left:none; padding:6px 8px; color:#444;">
-          <apex:outputText value="{!latestPayment.AMERP_Transaction_Reference__c}" rendered="{!latestPayment.AMERP_Transaction_Reference__c != null}"/>
-          <apex:outputText value="—" rendered="{!latestPayment.AMERP_Transaction_Reference__c == null}"/>
+        <td width="14%" style="padding:10px 10px; font-size:9.5px; color:#222222; border-bottom:1px solid #e0e8f5;">{!latestPayment.AMERP_Payment_Mode__c}</td>
+        <td width="30%" style="padding:10px 10px; font-size:9.5px; color:#333333; border-bottom:1px solid #e0e8f5;">
+          <apex:outputText value="{!latestPayment.AMERP_Transaction_Reference__c}"/>
         </td>
-        <td width="12%" style="border:1px solid #d0daea; border-top:none; border-left:none; padding:6px 8px; text-align:right; font-weight:bold;">
-          <apex:outputText value="{0,number,###,##0.00}">
+        <td width="11%" style="padding:10px 10px; font-size:9.5px; font-weight:bold; color:#111111; text-align:right; border-bottom:1px solid #e0e8f5;">
+          &#8377;&#160;<apex:outputText value="{0,number,###,##0.00}">
             <apex:param value="{!latestPayment.AMERP_Payment_Amount__c}"/>
-          </apex:outputText>
-        </td>
-        <td width="12%" style="border:1px solid #d0daea; border-top:none; border-left:none; padding:6px 8px; text-align:right;">
-          <apex:outputText value="{0,number,###,##0.00}">
-            <apex:param value="{!balanceDue}"/>
           </apex:outputText>
         </td>
       </tr>
     </table>
   </apex:outputPanel>
   <apex:outputPanel rendered="{!latestPayment == null}">
-    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+    <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
       <tr>
-        <td style="border:1px solid #d0daea; border-top:none; padding:14px; text-align:center; color:#aaa; font-style:italic;">
+        <td colspan="5" style="padding:14px 10px; font-size:9px; color:#888; font-style:italic; text-align:center; border-bottom:1px solid #e0e8f5;">
           No payment records available.
         </td>
       </tr>
     </table>
   </apex:outputPanel>
 
-  <!-- ════════════════════════════
-       AMOUNT SUMMARY
-  ════════════════════════════ -->
+  <!-- ══════════════════════════════
+       SUMMARY + SIGNATURE
+  ══════════════════════════════ -->
   <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
     <tr>
-      <td width="55%">&#160;</td>
-      <td width="45%">
-        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+      <td width="50%" style="vertical-align:top;">&#160;</td>
+      <td width="50%" style="vertical-align:top; padding-left:10px;">
+
+        <!-- Summary rows -->
+        <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
           <tr>
-            <td style="border:1px solid #d0daea; padding:5px 9px; font-weight:bold; color:#1a3a5c; background-color:#f2f5fb; width:55%;">Invoice Amount</td>
-            <td style="border:1px solid #d0daea; border-left:none; padding:5px 9px; text-align:right; background-color:#f2f5fb;">
-              <apex:outputText value="{0,number,###,##0.00}">
+            <td style="padding:7px 10px; font-size:9.5px; color:#333333; font-weight:bold;">Invoice Total Amount</td>
+            <td style="padding:7px 10px; font-size:9.5px; color:#111111; text-align:right; font-weight:bold;">
+              &#8377;&#160;<apex:outputText value="{0,number,###,##0.00}">
                 <apex:param value="{!invoice.AMERP_Invoice_Amount__c}"/>
               </apex:outputText>
             </td>
           </tr>
           <tr>
-            <td style="border:1px solid #d0daea; border-top:none; padding:5px 9px; font-weight:bold; color:#1a3a5c;">Amount Paid</td>
-            <td style="border:1px solid #d0daea; border-top:none; border-left:none; padding:5px 9px; text-align:right;">
-              <apex:outputText value="{0,number,###,##0.00}">
+            <td style="padding:7px 10px; font-size:9.5px; color:#333333; font-weight:bold; border-top:1px solid #e0e8f5;">Total Amount Paid</td>
+            <td style="padding:7px 10px; font-size:9.5px; color:#111111; text-align:right; font-weight:bold; border-top:1px solid #e0e8f5;">
+              &#8377;&#160;<apex:outputText value="{0,number,###,##0.00}">
                 <apex:param value="{!amountPaid}"/>
               </apex:outputText>
             </td>
           </tr>
           <tr>
-            <td style="border:1px solid #1a3a5c; border-top:none; padding:6px 9px; font-weight:bold; color:#ffffff; background-color:#1a3a5c; font-size:11px;">Balance Due</td>
-            <td style="border:1px solid #1a3a5c; border-top:none; border-left:none; padding:6px 9px; text-align:right; font-weight:bold; color:#ffffff; background-color:#1a3a5c; font-size:11px;">
-              <apex:outputText value="{0,number,###,##0.00}">
+            <td style="padding:9px 10px; font-size:12px; font-weight:bold; color:#1740a8; border-top:2.5px solid #1740a8;">Balance Due</td>
+            <td style="padding:9px 10px; font-size:14px; font-weight:bold; color:#1740a8; text-align:right; border-top:2.5px solid #1740a8;">
+              &#8377;&#160;<apex:outputText value="{0,number,###,##0.00}">
                 <apex:param value="{!balanceDue}"/>
               </apex:outputText>
             </td>
           </tr>
         </table>
+
+        <!-- Signature box with logo inside -->
+        <table width="100%" border="0" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="text-align:right;">
+              <table border="0" cellpadding="0" cellspacing="0" align="right">
+                <tr>
+                  <td style="border:1px dashed #9aadcc; width:140px; height:64px; text-align:center; vertical-align:middle; padding:6px 0;">
+                    <img src="{!URLFOR($Resource.Logo)}" height="28" style="display:block; margin:0 auto 4px auto;"/>
+                    <div style="font-size:7px; color:#aaa; text-transform:uppercase; letter-spacing:0.5px;">Stamp / Signature</div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top:5px; text-align:right;">
+                    <div style="font-size:8px; font-weight:bold; color:#1a3a5c; text-transform:uppercase; letter-spacing:0.6px;">Authorized Signatory</div>
+                    <div style="font-size:7.5px; color:#555;">KRISH CARBON PVT LTD</div>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+
       </td>
     </tr>
   </table>
 
-  <!-- ════════════════════════════
-       SIGNATURE STRIP
-  ════════════════════════════ -->
-  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:3px;">
-    <tr><td style="border-top:2px solid #1a3a5c; line-height:0; font-size:0;">&#160;</td></tr>
+  <!-- ══════════════════════════════
+       FOOTER INFO BOX
+  ══════════════════════════════ -->
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+    <tr>
+      <td style="background-color:#eef3fb; border:1px solid #ccd8ee; padding:11px 16px; font-size:10px; color:#000000;  line-height:1.5;">
+        This is a computer-generated document and does not require a physical signature. For any discrepancies, please contact our accounts department at accounts@krishcarbon.com within 24 hours of receipt. Thank you for your business.
+      </td>
+    </tr>
   </table>
-  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:0;">
-    <tr><td style="border-top:1px solid #7a9cbf; line-height:0; font-size:0;">&#160;</td></tr>
-  </table>
- 
-  <!-- ════════════════════════════
-       FOOTER
-  ════════════════════════════ -->
-  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="margin-bottom:4px;">
-    <tr><td style="border-top:3px solid #1a3a5c; line-height:0; font-size:0;">&#160;</td></tr>
-  </table>
+
+  <!-- ══════════════════════════════
+       FOOTER BAR
+  ══════════════════════════════ -->
   <table width="100%" border="0" cellpadding="0" cellspacing="0">
     <tr>
-      <td style="text-align:center; font-size:11.5px; color:#000000; padding-top:5px;">
-        This is a computer-generated payment receipt and does not require a physical signature.&#160;&#160;|&#160;&#160;
-        KRISH CARBON PVT LTD&#160;&#160;|&#160;&#160;IndiaLand Tech Park, Coimbatore, Tamil Nadu, India
+      <td style="border-top:2px solid #1740a8; padding-top:10px; text-align:center;">
+        <div style="font-size:10.5px; font-weight:bold; color:#1a3a5c;">KRISH CARBON PVT LTD</div>
+        <div style="font-size:8px; color:#555; margin-top:2px;">Regd Office: IndiaLand Tech Park, Coimbatore, Tamil Nadu, India</div>
+        <div style="font-size:8px; color:#1740a8; margin-top:4px;">
+          https://www.arrayminds.com/&#160;&#160;&#160;&#160;INFO@KRISHCARBON.COM
+        </div>
       </td>
     </tr>
   </table>
