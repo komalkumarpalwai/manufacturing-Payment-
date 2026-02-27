@@ -74,7 +74,8 @@ export default class InvoicePayments extends LightningElement {
         ],
         'Bank Transfer': [
             { name: 'bankName', label: 'Bank Name', type: 'text', required: true },
-            { name: 'ifscCode', label: 'IFSC Code', type: 'text', required: true }
+            { name: 'ifscCode', label: 'IFSC Code', type: 'text', required: true },
+            { name: 'bankAccountNumber', label: 'Bank Account Number', type: 'text', required: true }
         ]
     };
 
@@ -612,9 +613,50 @@ export default class InvoicePayments extends LightningElement {
             'cardHolderName': 'Enter card holder name',
             'cardNumber': 'Enter card number',
             'bankName': 'Enter bank name',
-            'ifscCode': 'Enter IFSC code'
+            'ifscCode': 'Enter IFSC code',
+            'bankAccountNumber': 'Enter bank account number'
         };
         return placeholders[fieldName] || '';
+    }
+
+    /**
+     * Get field label with icon based on field name
+     */
+    getFieldLabelWithIcon(fieldName) {
+        const iconMap = {
+            'cashReceivedBy': '👤 Cash Received By',
+            'cashReceiptNumber': '🧾 Cash Receipt Number',
+            'upiAppName': '📱 UPI App Name',
+            'upiId': '🆔 UPI ID',
+            'nameOnUpi': '👤 Name On UPI',
+            'cardHolderName': '👤 Card Holder Name',
+            'cardNumber': '🔢 Card Number',
+            'cardType': '🳳 Card Type',
+            'bankName': '🏦 Bank Name',
+            'ifscCode': '🔐 IFSC Code',
+            'bankAccountNumber': '💳 Bank Account Number'
+        };
+        return iconMap[fieldName] || fieldName;
+    }
+
+    /**
+     * Get helper text for field based on field name
+     */
+    getFieldHelperText(fieldName) {
+        const helperText = {
+            'cashReceivedBy': 'Name of the person who received the cash payment',
+            'cashReceiptNumber': 'Receipt number for the cash transaction',
+            'upiAppName': 'Select the UPI application used (GPay, PhonePe, Paytm, etc.)',
+            'upiId': 'Your UPI ID in format: username@bankname',
+            'nameOnUpi': 'Name associated with your UPI account',
+            'cardHolderName': 'Name of the card holder (as shown on card)',
+            'cardNumber': 'Last 4 digits or full card number (stored securely)',
+            'cardType': 'Type of card (Visa, MasterCard, RuPay, etc.)',
+            'bankName': 'Name of the bank for transfer',
+            'ifscCode': 'IFSC code of the bank branch',
+            'bankAccountNumber': 'Account number for the bank transfer (up to 20 characters)'
+        };
+        return helperText[fieldName] || '';
     }
 
     /**

@@ -1,8 +1,9 @@
-<apex:page controller="InvoicePaymentController"
+<apex:page   renderAs="pdf"
+controller="InvoicePaymentController"
            showHeader="false"
            sidebar="false"
            standardStylesheets="false"
-           renderAs="pdf"
+          
            contentType="application/pdf">
 <html>
 <head>

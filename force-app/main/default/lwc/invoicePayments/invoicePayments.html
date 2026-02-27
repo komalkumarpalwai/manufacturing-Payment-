@@ -138,10 +138,10 @@
                 <!-- Form Fields -->
                 <div class="payment-form-container">
                     <!-- Amount Input -->
-                    <div class="form-field">
+                    <div class="form-field form-field--amount">
                         <lightning-input
                             type="number"
-                            label="Amount"
+                            label="💰 Payment Amount"
                             placeholder="0.00"
                             value={paymentAmount}
                             onchange={handleAmountChange}
@@ -150,6 +150,7 @@
                             required
                             class="form-input"
                         ></lightning-input>
+                        <div class="form-field-helper">Enter the amount to be paid</div>
                     </div>
 
                     <!-- Dynamic Fields Based on Payment Mode -->
@@ -158,7 +159,7 @@
                             <!-- Card Type Combobox -->
                             <template if:true="{isCardTypeField(field.name)}">
                                 <lightning-combobox
-                                    label={field.label}
+                                    label="{getFieldLabelWithIcon(field.name)}"
                                     value="{getFieldValue(field.name)}"
                                     options={cardTypeOptions}
                                     onchange={handleCardTypeChange}
@@ -166,12 +167,13 @@
                                     placeholder="Select Card Type"
                                     class="form-input"
                                 ></lightning-combobox>
+                                <div class="form-field-helper">Select the type of card you're using</div>
                             </template>
 
                             <!-- UPI App Name Picklist Combobox -->
                             <template if:true="{isUpiAppNameField(field.name)}">
                                 <lightning-combobox
-                                    label={field.label}
+                                    label="{getFieldLabelWithIcon(field.name)}"
                                     value="{getFieldValue(field.name)}"
                                     options={upiAppNameOptions}
                                     onchange={handleUpiAppNameChange}
@@ -179,6 +181,7 @@
                                     placeholder="Select UPI App"
                                     class="form-input"
                                 ></lightning-combobox>
+                                <div class="form-field-helper">Choose the UPI application you're using</div>
                             </template>
 
                             <!-- Text Input Fields -->
@@ -187,7 +190,7 @@
                                     <template if:true={field.required}>
                                         <lightning-input
                                             type="text"
-                                            label={field.label}
+                                            label="{getFieldLabelWithIcon(field.name)}"
                                             placeholder="{getFieldPlaceholder(field.name)}"
                                             value="{getFieldValue(field.name)}"
                                             onchange={handleFieldChange}
@@ -195,17 +198,19 @@
                                             required
                                             class="form-input"
                                         ></lightning-input>
+                                        <div class="form-field-helper">{getFieldHelperText(field.name)}</div>
                                     </template>
                                     <template if:false={field.required}>
                                         <lightning-input
                                             type="text"
-                                            label={field.label}
+                                            label="{getFieldLabelWithIcon(field.name)}"
                                             placeholder="{getFieldPlaceholder(field.name)}"
                                             value="{getFieldValue(field.name)}"
                                             onchange={handleFieldChange}
                                             data-field={field.name}
                                             class="form-input"
                                         ></lightning-input>
+                                        <div class="form-field-helper">{getFieldHelperText(field.name)}</div>
                                     </template>
                                 </template>
                             </template>
@@ -215,7 +220,7 @@
                     <!-- Notes -->
                     <div class="form-field">
                         <lightning-textarea
-                            label="Notes"
+                            label="📝 Additional Notes"
                             placeholder="Add optional notes..."
                             value={paymentNote}
                             onchange={handleNotesChange}
