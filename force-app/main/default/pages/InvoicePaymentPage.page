@@ -13,7 +13,13 @@
 <body>
 
 <table width="100%" border="0" cellpadding="0" cellspacing="0">
-<tr><td style="padding: 24px 36px 20px 36px;">
+<tr><td style="padding: 16px;">
+
+  <!-- ══════════════════════════════
+       OUTER BORDER WRAPPER
+  ══════════════════════════════ -->
+  <table width="100%" border="0" cellpadding="0" cellspacing="0" style="border: 2px solid #1740a8; border-radius: 4px;">
+  <tr><td style="padding: 24px 36px 20px 36px;">
 
   <!-- ══════════════════════════════
        TOP HEADER ROW
@@ -28,7 +34,12 @@
             </td>
             <td style="vertical-align:middle;">
               <div style="font-size:14px; font-weight:bold; color:#1a3a5c;">KRISH CARBON PVT LTD</div>
-              <div style="font-size:8.5px; color:#555; margin-top:1px;">Sustainable Energy Solutions</div>
+              <div style="font-size:8.5px; color:#555; margin-top:1px;">
+IndiaLand Tech Park
+Coimbatore, Tamil Nadu
+641035
+India
+080-45813602</div>
             </td>
           </tr>
         </table>
@@ -306,6 +317,10 @@
       </td>
     </tr>
   </table>
+
+  </td></tr>
+  </table>
+  <!-- END OUTER BORDER WRAPPER -->
 
 </td></tr>
 </table>
