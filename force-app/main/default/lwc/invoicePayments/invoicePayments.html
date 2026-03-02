@@ -88,6 +88,72 @@
             </div>
         </lightning-card>
 
+        <!-- PAYMENT SUCCESS MODAL -->
+        <template if:true={showPaymentSuccessModal}>
+            <div class="success-modal-overlay" onclick={closePaymentSuccessModal}>
+                <div class="success-modal-container" onclick={preventClose}>
+                    <div class="success-modal">
+                        <!-- Success Icon -->
+                        <div class="success-icon-container">
+                            <div class="success-checkmark">✓</div>
+                        </div>
+
+                        <!-- Title -->
+                        <h2 class="success-title">Payment Successful</h2>
+                        <p class="success-subtitle">Your transaction has been processed.</p>
+
+                        <!-- Amount Display -->
+                        <div class="success-amount">
+                            <lightning-formatted-number
+                                value={lastPaymentDetails.amount}
+                                format-style="currency"
+                                currency-code={currencyCode}
+                                minimum-fraction-digits="2"
+                                maximum-fraction-digits="2"
+                            ></lightning-formatted-number>
+                        </div>
+
+                        <!-- Transaction Details -->
+                        <div class="success-details">
+                            <div class="detail-row">
+                                <span class="detail-label">Date</span>
+                                <span class="detail-value">{lastPaymentDetails.date}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Transaction ID</span>
+                                <span class="detail-value">{lastPaymentDetails.transactionId}</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="detail-label">Payment Method</span>
+                                <span class="detail-value">{lastPaymentDetails.paymentMode}</span>
+                            </div>
+                        </div>
+
+                        <!-- Countdown Timer -->
+                        <div class="success-countdown">
+                            Closing in <strong>{successModalCountdown}</strong> seconds
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="success-actions">
+                            <lightning-button
+                                label="View Payment History"
+                                onclick={viewPaymentHistoryFromSuccess}
+                                variant="brand"
+                                class="success-action-btn history-btn"
+                            ></lightning-button>
+                            <lightning-button
+                                label="Close"
+                                onclick={closePaymentSuccessModal}
+                                variant="neutral"
+                                class="success-action-btn close-btn"
+                            ></lightning-button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+
         <!-- COMPLETION MESSAGE (When outstanding is zero) -->
         <div if:true={isPaymentComplete} class="completion-message-container">
             <div class="completion-message">
@@ -146,11 +212,12 @@
                             value={paymentAmount}
                             onchange={handleAmountChange}
                             min="0"
+                            max={outstandingAmount}
                             step="0.01"
                             required
                             class="form-input"
                         ></lightning-input>
-                        <div class="form-field-helper">Enter the amount to be paid</div>
+                        <div class="form-field-helper">Enter the amount to be paid (Max: {outstandingAmount} - Outstanding Amount)</div>
                     </div>
 
                     <!-- Dynamic Fields Based on Payment Mode -->
@@ -180,6 +247,7 @@
                                     required={field.required}
                                     placeholder="Select UPI App"
                                     class="form-input"
+                                    drop-alignment="left"
                                 ></lightning-combobox>
                                 <div class="form-field-helper">Choose the UPI application you're using</div>
                             </template>

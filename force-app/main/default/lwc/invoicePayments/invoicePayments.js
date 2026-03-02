@@ -19,6 +19,9 @@ export default class InvoicePayments extends LightningElement {
     isSaving = false;
     errorMessage = '';
     showPaymentHistoryModal = false;
+    showPaymentSuccessModal = false;
+    lastPaymentDetails = null;
+    successModalCountdown = 3;
     
     // Payment Form
     selectedPaymentMode = null;
@@ -63,9 +66,9 @@ export default class InvoicePayments extends LightningElement {
             { name: 'cashReceiptNumber', label: 'Cash Receipt Number', type: 'text', required: true }
         ],
         'UPI': [
-            { name: 'upiAppName', label: 'UPI App Name', type: 'picklist', required: true },
             { name: 'upiId', label: 'UPI ID', type: 'text', required: true },
-            { name: 'nameOnUpi', label: 'Name On UPI', type: 'text', required: true }
+            { name: 'nameOnUpi', label: 'Name On UPI', type: 'text', required: true },
+            { name: 'upiAppName', label: 'UPI App Name', type: 'picklist', required: false }
         ],
         'Card': [
             { name: 'cardHolderName', label: 'Card Holder Name', type: 'text', required: true },
@@ -181,14 +184,26 @@ export default class InvoicePayments extends LightningElement {
      * Handle card type selection
      */
     handleCardTypeChange(event) {
-        this.formFields.cardType = event.detail.value;
+        this.formFields = { ...this.formFields, cardType: event.detail.value };
     }
 
     /**
      * Handle UPI app name selection
      */
     handleUpiAppNameChange(event) {
-        this.formFields.upiAppName = event.detail.value;
+        const selectedValue = event.detail.value;
+        this.formFields = { 
+            ...this.formFields, 
+            upiAppName: selectedValue 
+        };
+    }
+
+    /**
+     * Handle dynamic field changes
+     */
+    handleFieldChange(event) {
+        const fieldName = event.currentTarget.dataset.field;
+        this.formFields = { ...this.formFields, [fieldName]: event.detail.value };
     }
 
     /**
@@ -433,8 +448,30 @@ export default class InvoicePayments extends LightningElement {
             const result = await createInvoicePayment({ wrapper });
 
             if (result) {
-                // Show success message
-                this.showToast('Success', 'Payment recorded successfully', 'success');
+                // Store payment details for success modal
+                this.lastPaymentDetails = {
+                    amount: parseFloat(this.paymentAmount),
+                    date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: '2-digit' }),
+                    paymentMode: this.selectedPaymentMode,
+                    transactionId: this.generateTransactionId(this.selectedPaymentMode, parseFloat(this.paymentAmount)),
+                    customerName: this.invoiceData?.AMERP_Customer__r?.Name || 'N/A'
+                };
+                
+                // Show success modal
+                this.showPaymentSuccessModal = true;
+                this.successModalCountdown = 5;
+                
+                // Auto-close modal after 3 seconds
+                if (this.successModalTimer) {
+                    clearInterval(this.successModalTimer);
+                }
+                // Update countdown every second
+                this.successModalTimer = setInterval(() => {
+                    this.successModalCountdown--;
+                    if (this.successModalCountdown <= 0) {
+                        this.closePaymentSuccessModal();
+                    }
+                }, 1000);
                 
                 // Reset form
                 this.resetPaymentForm();
@@ -462,8 +499,10 @@ export default class InvoicePayments extends LightningElement {
         }
 
         // Check amount doesn't exceed outstanding
-        if (parseFloat(this.paymentAmount) > (this.outstandingAmount || 0)) {
-            this.showToast('Validation Error', 'Payment amount cannot exceed outstanding amount', 'error');
+        const amount = parseFloat(this.paymentAmount);
+        const outstanding = parseFloat(this.outstandingAmount) || 0;
+        if (amount > outstanding) {
+            this.showToast('Validation Error', `Payment amount (${amount.toFixed(2)}) cannot exceed outstanding amount (${outstanding.toFixed(2)})`, 'error');
             return false;
         }
 
@@ -693,6 +732,34 @@ export default class InvoicePayments extends LightningElement {
      */
     isUpiAppNameField(fieldName) {
         return fieldName === 'upiAppName';
+    }
+
+    /**
+     * Close payment success modal
+     */
+    closePaymentSuccessModal() {
+        this.showPaymentSuccessModal = false;
+        this.lastPaymentDetails = null;
+        this.successModalCountdown = 3;
+        // Clear any pending timer
+        if (this.successModalTimer) {
+            clearInterval(this.successModalTimer);
+        }
+    }
+
+    /**
+     * Prevent closing modal when clicking inside it
+     */
+    preventClose(event) {
+        event.stopPropagation();
+    }
+
+    /**
+     * Open payment history from success modal
+     */
+    viewPaymentHistoryFromSuccess() {
+        this.closePaymentSuccessModal();
+        this.openPaymentHistory();
     }
 
     /**
