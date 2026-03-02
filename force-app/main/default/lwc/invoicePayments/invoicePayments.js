@@ -561,7 +561,29 @@ export default class InvoicePayments extends LightningElement {
     get isPayButtonDisabled() {
         const outstanding = parseFloat(this.outstandingAmount) || 0;
         const amount = parseFloat(this.paymentAmount) || 0;
-        return amount <= 0 || amount > outstanding || this.isSaving;
+        
+        // Check basic amount validation
+        if (amount <= 0 || amount > outstanding || this.isSaving) {
+            return true;
+        }
+        
+        // Check if payment mode is selected
+        if (!this.selectedPaymentMode) {
+            return true;
+        }
+        
+        // Check if all required fields are filled
+        const requiredFields = this.paymentModeFields[this.selectedPaymentMode] || [];
+        for (const field of requiredFields) {
+            if (field.required) {
+                const value = this.formFields[field.name];
+                if (!value || value.toString().trim() === '') {
+                    return true;
+                }
+            }
+        }
+        
+        return false;
     }
 
     get currentModeFields() {

@@ -216,6 +216,15 @@ public with sharing class InvoicePaymentController {
             System.debug('Error calculating balance after payment: ' + e.getMessage());
         }
     }
+
+    
+    public Decimal getAmountPaidBeforeThis() {
+    Decimal totalPaid = amountPaid != null ? amountPaid : 0;
+    Decimal thisPayment = (latestPayment != null && latestPayment.AMERP_Payment_Amount__c != null)
+                          ? latestPayment.AMERP_Payment_Amount__c
+                          : 0;
+    return totalPaid - thisPayment;
+}
     
     // ─────────────────────────────────────────────────────────────────
     // GENERATE & SAVE RECEIPT
